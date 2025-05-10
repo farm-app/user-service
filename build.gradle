@@ -51,7 +51,7 @@ repositories {
 ext {
     lombokMapstructBindingVersion = "0.2.0"
     springCloudVersion = "2023.0.2"
-    commonVersion = "1.1"
+    commonVersion = "0.0.1-SNAPSHOT"
     minioVersion = "8.5.5"
     mapStructVersion = "1.5.5.Final"
     keycloakVersion = "16.1.1"
