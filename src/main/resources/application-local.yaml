@@ -1,0 +1,94 @@
+server:
+  servlet:
+    context-path: /api/user
+  port: 9103
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761}/eureka/
+    enabled: false
+
+internal:
+  api-key-header-name: Api-key
+  service:
+    auth:
+      url: http://localhost:9101
+      secure-key: ES8p3QFFyPEdpnAdYCdDMPGxm4epBMWdEDLbNB8eSBHjxQmNsk2jjz7ATK2wUCEf
+    user:
+      secure-key: ES8p3QFFyPEdpnAdYCdDMPGxm4epBMWdEDLbNB8eSBHjxQmNsk2jjz7ATK2wUCEf
+
+settings:
+  excluded-refresh-usernames: ${EXCLUDED_REFRESH_USERNAMES:}
+  excluded-get-usernames: ${EXCLUDED_GET_USERNAMES:}
+  keycloak:
+    enabled: true
+    uri: http://localhost:8081
+    realm: farm
+    client-id: farm-app
+    client-secret: qzk6jPoAkotlLIWNq4n44nk2uwUPQO4m
+    service-account:
+      username: admin
+      password: 12345
+
+minio:
+  url: http://localhost:9000
+  external-url: http://localhost:9000
+  access-key: andrey
+  secret-key: andrey_antonov
+  buckets:
+    profile-picture: user-profile-pictures-bucket
+    bot-picture: bot-pictures-bucket
+
+scheduler:
+  pictures-lifetime: 86400s
+  cron:
+    file-clean-up: 0 0 4 * * *
+    users-refresh: 0 5 4 * * *
+    keycloak-users-refresh: 0 10 4 * * *
+    users-permissions-refresh: 0 15 4 * * *
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+spring:
+  profiles:
+    active: default
+  application:
+    name: user
+  #  config:
+  #    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/user
+    username: postgres
+    password: postgres
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/changelog.yaml
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 10MB
+  jackson:
+    default-property-inclusion: non_null
+    mapper:
+      accept-case-insensitive-enums: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  cloud:
+    config:
+      enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: redis_secret_pass
+

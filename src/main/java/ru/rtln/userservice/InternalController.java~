@@ -1,0 +1,123 @@
+package ru.rtln.userservice;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.relex.common.model.SuccessModel;
+import ru.relex.userservice.configuration.ProfileProperties;
+import ru.relex.userservice.model.AuthenticationUserModel;
+import ru.relex.userservice.model.PermissionUserModel;
+import ru.relex.userservice.model.UserModel;
+import ru.relex.userservice.scheduler.AchievementScheduler;
+import ru.relex.userservice.scheduler.FileCleanupScheduler;
+import ru.relex.userservice.scheduler.KeycloakRefreshScheduler.UpdateKeycloakUserWithoutTransactionListenerEvent;
+import ru.relex.userservice.scheduler.UsersRefreshScheduler.RefreshUsersEvent;
+import ru.relex.userservice.service.PermissionService;
+import ru.relex.userservice.service.RoleService;
+import ru.relex.userservice.service.UserService;
+import ru.relex.userservice.util.StringUtils;
+import ru.rtln.common.model.SuccessModel;
+import ru.rtln.userservice.config.properties.ProfileProperties;
+
+import java.util.List;
+
+
+@RequiredArgsConstructor
+@RequestMapping("/internal")
+@RestController
+public class InternalController {
+
+    private final UserService userService;
+    private final RoleService roleService;
+    private final PermissionService permissionService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final FileCleanupScheduler fileCleanupScheduler;
+    private final AchievementScheduler achievementScheduler;
+
+    @ConditionalOnProperty(name = ProfileProperties.KEYCLOAK_ENABLED, havingValue = "true")
+    @PostMapping("/user-info/keycloak/refresh")
+    public SuccessModel<String> updateKeycloakUsersData() {
+        eventPublisher.publishEvent(new UpdateKeycloakUserWithoutTransactionListenerEvent());
+        return SuccessModel.okSuccessModel("Successful update keycloak user data", "updateKeycloakUserData");
+    }
+
+    @GetMapping("/user-info/{email}")
+    public SuccessModel<AuthenticationUserModel> getAuthenticatedUserInternalInfo(@PathVariable String email) {
+        var response = roleService.getAuthenticationUserModelByEmail(email);
+        return SuccessModel.okSuccessModel(response, "getAuthenticatedUserInternalInfo");
+    }
+
+    @GetMapping("/users/{userId}/exists")
+    public SuccessModel<Boolean> checkUserExistsById(@PathVariable Long userId) {
+        var response = userService.existsById(userId);
+        return SuccessModel.okSuccessModel(response, "checkUserExistsById");
+    }
+
+    @GetMapping("/users")
+    public SuccessModel<List<UserModel>> getUsersInternal() {
+        var response = userService.getAllUsers();
+        return SuccessModel.okSuccessModel(response, "getUsersInternal");
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/users")
+    public SuccessModel<UserModel> saveUserInternal(@RequestBody UserModel userModel) {
+        var response = userService.saveUserInternal(userModel);
+        return SuccessModel.createdSuccessModel(response, "saveUserInternal");
+    }
+
+    @PostMapping("/permissions/{permission}/users")
+    public SuccessModel<String> setPermissionToUsers(
+            @PathVariable String permission,
+            @RequestBody PermissionUserModel request
+    ) {
+        request.setPermissionName(permission);
+        permissionService.setPermissionToUsers(request);
+        return SuccessModel.okSuccessModel("Successfully saved", "setPermissionToUsers");
+    }
+
+    @DeleteMapping("/permissions/{permission}/users/{userId}")
+    public SuccessModel<String> removePermissionFromUser(
+            @PathVariable String permission,
+            @PathVariable Long userId
+    ) {
+        if (!StringUtils.isNullOrEmpty(permission)) {
+            permission = permission.toUpperCase();
+        }
+        permissionService.removePermissionFromUser(permission, userId, true);
+        return SuccessModel.deletedSuccessModel("removePermissionFromUser");
+    }
+
+    @DeleteMapping("/permissions/{permission}/users")
+    public SuccessModel<String> removePermissionFromUsers(
+            @PathVariable String permission,
+            @RequestBody PermissionUserModel request
+    ) {
+        request.setPermissionName(permission);
+        permissionService.removePermissionFromUsers(request);
+        return SuccessModel.deletedSuccessModel("removePermissionFromUsers");
+    }
+
+    @PostMapping("/files/cleanup")
+    public SuccessModel<String> deleteUnusedFiles() {
+        fileCleanupScheduler.deleteUnusedFiles();
+        return SuccessModel.okSuccessModel("Successfully deleted unused files", "deleteUnusedFiles");
+    }
+
+    @PostMapping("/users/refresh")
+    public SuccessModel<String> refreshUsersData() {
+        eventPublisher.publishEvent(new RefreshUsersEvent());
+        return SuccessModel.okSuccessModel("User data updated successfully", "refreshUsersData");
+    }
+
+    @PostMapping("/achievements/refresh")
+    public SuccessModel<String> updateAchievementAssignment() {
+        achievementScheduler.updateAchievementAssignment();
+        return SuccessModel.okSuccessModel("Successful update of achievement assignments", "updateAchievementAssignment");
+    }
+}

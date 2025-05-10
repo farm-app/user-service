@@ -1,0 +1,35 @@
+package ru.relex.userservice.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
+import ru.relex.userservice.entity.RatingAction;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface RatingActionRepository extends JpaRepository<RatingAction, Long> {
+
+    @Query("""
+            SELECT  ra
+             FROM   RatingAction ra
+             WHERE  ra.active AND ra.visible
+             ORDER BY ra.id
+            """)
+    List<RatingAction> findAllAvailable();
+
+    @NonNull
+    @Query("SELECT  ra FROM RatingAction ra WHERE ra.active ORDER BY ra.id")
+    @Override
+    List<RatingAction> findAll();
+
+    @NonNull
+    @Query("""
+            SELECT  ra
+             FROM   RatingAction ra
+             WHERE  ra.id = :id AND
+                    ra.active
+            """)
+    @Override
+    Optional<RatingAction> findById(@NonNull Long id);
+}

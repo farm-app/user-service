@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Andrey Antonov
+      comment: Initial scheme
+      changes:
+        - sqlFile:
+            path: 1-initial-scheme.sql
+            relativeToChangelogFile: true
+  - changeSet:
+      id: 2
+      author: Andrey Antonov
+      comment: Filling dictionary tables
+      changes:
+        - sqlFile:
+            path: 2-filling-dictionary-tables.sql
+            relativeToChangelogFile: true

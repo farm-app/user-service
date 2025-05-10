@@ -1,0 +1,88 @@
+package ru.relex.userservice.configuration;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Duration;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
+
+@Configuration
+public class ServiceConfiguration {
+
+    @Bean
+    public RestTemplate authRestTemplate(
+            @Value("${internal.service.auth.url}") String authUri,
+            @Value("${internal.api-key-header-name}") String apiKeyHeaderName,
+            @Value("${internal.service.auth.secure-key}") String authSecretKeyValue,
+            RestTemplateBuilder builder
+    ) {
+        return builder
+                .rootUri(authUri)
+                .defaultHeader(apiKeyHeaderName, authSecretKeyValue)
+                .setConnectTimeout(Duration.of(5, SECONDS))
+                .build();
+    }
+
+    @Bean
+    public RestTemplate gratitudeRestTemplate(
+            @Value("${internal.service.gratitude.url}") String gratitudeUri,
+            @Value("${internal.api-key-header-name}") String apiKeyHeaderName,
+            @Value("${internal.service.gratitude.secure-key}") String gratitudeSecretKeyValue,
+            SelectSqlQueryRestTemplateResponseErrorHandler selectSqlQueryRestTemplateResponseErrorHandler,
+            RestTemplateBuilder builder
+    ) {
+        return builder
+                .rootUri(gratitudeUri)
+                .defaultHeader(apiKeyHeaderName, gratitudeSecretKeyValue)
+                .setConnectTimeout(Duration.of(5, SECONDS))
+                .errorHandler(selectSqlQueryRestTemplateResponseErrorHandler)
+                .build();
+    }
+
+    @Bean
+    public RestTemplate shopRestTemplate(
+            @Value("${internal.service.shop.url}") String shopUri,
+            @Value("${internal.api-key-header-name}") String apiKeyHeaderName,
+            @Value("${internal.service.shop.secure-key}") String shopSecretKeyValue,
+            SelectSqlQueryRestTemplateResponseErrorHandler selectSqlQueryRestTemplateResponseErrorHandler,
+            RestTemplateBuilder builder
+    ) {
+        return builder
+                .rootUri(shopUri)
+                .defaultHeader(apiKeyHeaderName, shopSecretKeyValue)
+                .setConnectTimeout(Duration.of(5, SECONDS))
+                .errorHandler(selectSqlQueryRestTemplateResponseErrorHandler)
+                .build();
+    }
+
+    @Bean
+    public RestTemplate eventRestTemplate(
+            @Value("${internal.service.event.url}") String eventUri,
+            @Value("${internal.api-key-header-name}") String apiKeyHeaderName,
+            @Value("${internal.service.event.secure-key}") String eventSecretKeyValue,
+            SelectSqlQueryRestTemplateResponseErrorHandler selectSqlQueryRestTemplateResponseErrorHandler,
+            RestTemplateBuilder builder
+    ) {
+        return builder
+                .rootUri(eventUri)
+                .defaultHeader(apiKeyHeaderName, eventSecretKeyValue)
+                .setConnectTimeout(Duration.of(5, SECONDS))
+                .errorHandler(selectSqlQueryRestTemplateResponseErrorHandler)
+                .build();
+    }
+
+    @Bean
+    public RestTemplate intranetRestTemplate(
+            @Value("${internal.service.intranet.url}") String intranetUri,
+            RestTemplateBuilder builder
+    ) {
+        return builder
+                .rootUri(intranetUri)
+                .setConnectTimeout(Duration.of(5, SECONDS))
+                .build();
+    }
+}

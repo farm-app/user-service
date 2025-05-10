@@ -1,0 +1,62 @@
+package ru.relex.userservice.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "achievement_picture", schema = "\"user\"")
+@Entity
+public class AchievementPicture {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @NotNull
+    @Column(name = "active", nullable = false)
+    private Boolean active;
+
+    @CreatedDate
+    @Column(name = "created_at")
+    private Instant createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "achievement_id")
+    private Achievement achievement;
+
+    public AchievementPicture() {
+        this.active = true;
+    }
+
+    public AchievementPicture(Long id) {
+        this.id = id;
+    }
+
+    public AchievementPicture setAchievement(Achievement achievement) {
+        this.achievement = achievement;
+        return this;
+    }
+
+    public Achievement setAchievementAndReturn(Achievement achievement) {
+        this.achievement = achievement;
+        return achievement;
+    }
+
+    public Boolean isActive() {
+        return active;
+    }
+
+    public void disable() {
+        this.achievement = null;
+        this.active = false;
+    }
+}

@@ -1,0 +1,10 @@
+package ru.relex.userservice.service;
+
+import ru.relex.userservice.model.PositionModel;
+
+import java.util.List;
+
+public interface PositionService {
+
+    List<PositionModel> getAllPositions();
+}

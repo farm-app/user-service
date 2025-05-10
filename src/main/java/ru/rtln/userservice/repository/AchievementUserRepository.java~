@@ -1,0 +1,16 @@
+package ru.relex.userservice.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import ru.relex.userservice.entity.AchievementUser;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface AchievementUserRepository extends JpaRepository<AchievementUser, Long> {
+
+    boolean existsByAchievementIdAndUserId(Long achievementId, Long userId);
+
+    Optional<AchievementUser> findByAchievementIdAndUserId(Long achievementId, Long userId);
+
+    List<AchievementUser> findAllByAchievementId(Long achievementId);
+}
